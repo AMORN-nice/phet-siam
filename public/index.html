@@ -6,8 +6,8 @@
 <title>เพชรสยาม</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Charmonman:wght@700&family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="icon" href="assets/gem-red.png">
+<link href="https://fonts.googleapis.com/css2?family=Charmonman:wght@700&family=Chakra+Petch:wght@400;600;700&family=Pridi:wght@600&display=swap" rel="stylesheet">
+<link rel="icon" href="assets/siam/gem-red.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,6 +19,12 @@
     <label class="field">ชื่อของคุณ
       <input id="nameInput" maxlength="16" autocomplete="nickname">
     </label>
+    <fieldset class="theme-pick">
+      <legend>ธีมของห้อง</legend>
+      <label class="theme-opt"><input type="radio" name="theme" value="siam" checked><img src="assets/siam/card-1-red.png" alt=""><span>สยามโบราณ</span></label>
+      <label class="theme-opt"><input type="radio" name="theme" value="fantasy"><img src="assets/fantasy/card-1-red.png" alt=""><span>แฟนตาซี</span></label>
+      <label class="theme-opt"><input type="radio" name="theme" value="scifi"><img src="assets/scifi/card-1-red.png" alt=""><span>ไซไฟอวกาศ</span></label>
+    </fieldset>
     <button id="createBtn" class="btn primary">สร้างห้องใหม่</button>
     <div class="or">หรือเข้าห้องของเพื่อน</div>
     <div class="join-row">
@@ -34,6 +40,7 @@
 <section id="lobby" class="screen" hidden>
   <div class="home-card lacquer">
     <h2 class="title small">ห้อง <span id="lobbyCode"></span></h2>
+    <p id="lobbyTheme" class="sub theme-tag"></p>
     <p class="sub">ส่งลิงก์นี้ให้เพื่อนใน Discord</p>
     <div class="join-row">
       <input id="linkBox" readonly aria-label="ลิงก์ห้อง">
@@ -42,6 +49,10 @@
     <ol id="lobbyPlayers" class="lobby-players"></ol>
     <button id="startBtn" class="btn primary" hidden>เริ่มเกม</button>
     <p id="lobbyWait" class="sub"></p>
+    <div class="lobby-exit">
+      <button id="leaveBtn" class="btn ghost" hidden>ออกจากห้อง</button>
+      <button id="deleteBtn" class="btn ghost danger" hidden>ลบห้อง</button>
+    </div>
     <p id="lobbyErr" class="err" role="alert"></p>
   </div>
 </section>

@@ -2,13 +2,46 @@
 (() => {
   const COLORS = ['white', 'blue', 'green', 'red', 'black'];
   const GEM = { white: 'เพชร', blue: 'ไพลิน', green: 'มรกต', red: 'ทับทิม', black: 'นิล', gold: 'ทอง' };
-  const CARD_NAMES = {
-    1: { white: 'ช่างเจียระไน', blue: 'โรงย้อมคราม', green: 'นาข้าว', red: 'ตลาดน้ำ', black: 'โรงตีเหล็ก' },
-    2: { white: 'ท่าเรือสินค้า', blue: 'เรือพระที่นั่ง', green: 'โรงทอผ้าไหม', red: 'โรงเครื่องเขิน', black: 'คาราวานช้าง' },
-    3: { white: 'ขบวนช้างเผือก', blue: 'พระราชวัง', green: 'วัดหลวง', red: 'ท้องพระโรง', black: 'ปรางค์ราตรี' },
+  // Each theme: its art folder, display name, card and noble names. Gem names stay the same everywhere.
+  const THEMES = {
+    siam: {
+      name: 'สยามโบราณ',
+      cards: {
+        1: { white: 'ช่างเจียระไน', blue: 'โรงย้อมคราม', green: 'นาข้าว', red: 'ตลาดน้ำ', black: 'โรงตีเหล็ก' },
+        2: { white: 'ท่าเรือสินค้า', blue: 'เรือพระที่นั่ง', green: 'โรงทอผ้าไหม', red: 'โรงเครื่องเขิน', black: 'คาราวานช้าง' },
+        3: { white: 'ขบวนช้างเผือก', blue: 'พระราชวัง', green: 'วัดหลวง', red: 'ท้องพระโรง', black: 'ปรางค์ราตรี' },
+      },
+      nobles: ['', 'พระเจ้าแผ่นดิน', 'คุณหญิงมรกต', 'เจ้าพระยามหาเสนา', 'พระราชธิดา', 'พระยาพิชัย',
+        'พระราชโอรส', 'พระมเหสี', 'ขุนคลัง', 'นางสนองพระโอษฐ์', 'โหรหลวง'],
+    },
+    fantasy: {
+      name: 'แฟนตาซียุคกลาง',
+      cards: {
+        1: { white: 'เหมืองคนแคระ', blue: 'หมู่บ้านชาวประมง', green: 'สวนสมุนไพรเอลฟ์', red: 'ตลาดกลางเมือง', black: 'โรงตีเหล็กคนแคระ' },
+        2: { white: 'กองคาราวานภูเขาหิมะ', blue: 'ท่าเรือใบ', green: 'ตลาดบนต้นไม้', red: 'โรงเตี๊ยมสมาคม', black: 'สมาคมโจร' },
+        3: { white: 'มหาวิหารหินอ่อน', blue: 'หอคอยพ่อมด', green: 'นครเอลฟ์', red: 'ท้องพระโรงปราสาท', black: 'ป้อมปราการนิล' },
+      },
+      nobles: ['', 'ราชา', 'ราชินี', 'จอมเวทย์', 'อัศวินผู้บัญชาการ', 'สตรีเอลฟ์',
+        'เจ้าคนแคระ', 'เจ้าหญิง', 'ท่านดยุก', 'แม่มดหลวง', 'อัครมหาเสนาบดี'],
+    },
+    scifi: {
+      name: 'ไซไฟขุดแร่อวกาศ',
+      cards: {
+        1: { white: 'เหมืองดาวเคราะห์น้อย', blue: 'โรงกลั่นน้ำแข็ง', green: 'โดมไฮโดรโปนิกส์', red: 'แท่นขุดดาวอังคาร', black: 'อุโมงค์โดรน' },
+        2: { white: 'ยานขนส่งสินค้า', blue: 'สถานีโคจร', green: 'ฐานวิจัยป่าต่างดาว', red: 'โรงหลอมพลาสมา', black: 'ยานลักลอบในเนบิวลา' },
+        3: { white: 'ยานธงสีขาว', blue: 'ลิฟต์อวกาศ', green: 'นครดาวสีเขียว', red: 'สภาดาราจักร', black: 'สถานีหลุมดำ' },
+      },
+      nobles: ['', 'พลเรือเอก', 'จักรพรรดินี', 'แอนดรอยด์', 'ทูตต่างดาว', 'นายพลไซบอร์ก',
+        'นักวิทยาศาสตร์', 'นักบินฝีมือเยี่ยม', 'บารอนเนสพ่อค้า', 'หุ่นยนต์ผู้ช่วย', 'ผู้นำกาแล็กซี'],
+    },
   };
-  const NOBLE_NAMES = ['', 'พระเจ้าแผ่นดิน', 'คุณหญิงมรกต', 'เจ้าพระยามหาเสนา', 'พระราชธิดา', 'พระยาพิชัย',
-    'พระราชโอรส', 'พระมเหสี', 'ขุนคลัง', 'นางสนองพระโอษฐ์', 'โหรหลวง'];
+  let theme = 'siam';
+  const T = () => THEMES[theme] || THEMES.siam;
+  const A = () => `assets/${theme}`;
+  function setTheme(t) {
+    theme = THEMES[t] ? t : 'siam';
+    document.body.dataset.theme = theme;
+  }
 
   const $ = id => document.getElementById(id);
   const h = (tag, attrs = {}, ...kids) => {
@@ -23,7 +56,7 @@
     for (const k of kids.flat()) if (k != null && k !== false) el.append(k.nodeType ? k : document.createTextNode(k));
     return el;
   };
-  const gemImg = (c, size) => h('img', { src: `assets/gem-${c}.png`, alt: GEM[c], width: size, height: size });
+  const gemImg = (c, size) => h('img', { src: `${A()}/gem-${c}.png`, alt: GEM[c], width: size, height: size });
 
   // ---------- state ----------
   const socket = io({ transports: ['websocket', 'polling'] });
@@ -34,6 +67,12 @@
     set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } },
   };
 
+  // Sealed snapshot of the game (unreadable here) — lets a restarted server restore the room.
+  const snaps = {};
+  const getSnap = code => {
+    if (snaps[code]) return snaps[code];
+    try { return JSON.parse(store.get('ps-snap-' + code)) || undefined; } catch { return undefined; }
+  };
   const params = new URLSearchParams(location.search);
   $('nameInput').value = store.get('ps-name') || '';
   if (params.get('room')) $('codeInput').value = params.get('room').toUpperCase();
@@ -61,14 +100,17 @@
     store.set('ps-name', n);
     return n;
   };
-  $('createBtn').onclick = () => { const name = myName(); if (name) socket.emit('create', { name }); };
+  const pickedTheme = () => { const r = document.querySelector('input[name="theme"]:checked'); return r ? r.value : 'siam'; };
+  for (const r of document.querySelectorAll('input[name="theme"]')) r.addEventListener('change', () => setTheme(pickedTheme()));
+  setTheme(pickedTheme());
+  $('createBtn').onclick = () => { const name = myName(); if (name) socket.emit('create', { name, theme: pickedTheme() }); };
   const doJoin = () => {
     const code = $('codeInput').value.trim().toUpperCase();
     if (code.length !== 4) { $('homeErr').textContent = 'รหัสห้องมี 4 ตัวอักษร'; return; }
     const token = store.get('ps-token-' + code);
     const name = $('nameInput').value.trim();
     if (!token && !myName()) return;
-    socket.emit('join', { code, name, token });
+    socket.emit('join', { code, name, token, snap: token ? getSnap(code) : undefined });
   };
   $('joinBtn').onclick = doJoin;
   $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') doJoin(); });
@@ -78,7 +120,7 @@
   socket.on('connect', () => {
     const code = me.code || (params.get('room') || '').toUpperCase();
     const token = code && store.get('ps-token-' + code);
-    if (code && token) socket.emit('join', { code, token });
+    if (code && token) socket.emit('join', { code, token, snap: getSnap(code) });
   });
 
   // ---------- socket events ----------
@@ -94,13 +136,32 @@
     $('claimBox').hidden = true;
   });
 
+  socket.on('snap', s => {
+    if (!s || !s.code) return;
+    snaps[s.code] = s;
+    store.set('ps-snap-' + s.code, JSON.stringify(s));
+  });
+
   socket.on('room', r => {
     room = r;
+    setTheme(r.theme);
     if (!r.started) { view = null; lastSeq = null; renderLobby(); show('lobby'); }
     else if (view) renderGame();
   });
 
-  let lastSeq = null;
+  let lastSeq = null, deadline = null, lastTick = null;
+  // Turn countdown: redraws only the clock elements, every 250 ms.
+  setInterval(() => {
+    const left = deadline ? Math.max(0, Math.ceil((deadline - Date.now()) / 1000)) : null;
+    for (const el of document.querySelectorAll('.clock')) {
+      el.textContent = left == null ? '' : `${left} วิ`;
+      el.classList.toggle('low', left != null && left <= 10);
+    }
+    if (view && view.turn === view.you && view.phase !== 'over' && left != null && left <= 5 && left > 0 && left !== lastTick) {
+      lastTick = left;
+      SFX.play('tick');
+    }
+  }, 250);
   socket.on('state', v => {
     const prevTurn = view && view.turn;
     if (lastSeq !== null && v.seq !== lastSeq) {
@@ -111,6 +172,7 @@
       if (main !== 'over' && v.phase !== 'over' && v.turn === v.you && prevTurn !== v.turn) setTimeout(() => SFX.play('turn'), 450);
     }
     lastSeq = v.seq;
+    deadline = v.turnEndsIn != null ? Date.now() + v.turnEndsIn : null;
     view = v;
     picks = [];
     show('game');
@@ -126,6 +188,27 @@
   });
 
   socket.on('disconnect', () => toast('การเชื่อมต่อหลุด กำลังต่อใหม่…'));
+
+  // Back to the home screen after leaving or deleting a lobby, or when the host deleted it.
+  function backHome(msg) {
+    if (me.code) {
+      try { localStorage.removeItem('ps-token-' + me.code); localStorage.removeItem('ps-snap-' + me.code); } catch { /* ignore */ }
+    }
+    me = { code: null, token: null, seat: null };
+    room = null; view = null;
+    try {
+      const url = new URL(location.href);
+      url.searchParams.delete('room');
+      history.replaceState(null, '', url);
+    } catch { /* sandboxed frame */ }
+    $('codeInput').value = '';
+    $('homeErr').textContent = msg || '';
+    $('lobbyErr').textContent = '';
+    setTheme(pickedTheme());
+    show('home');
+  }
+  socket.on('left', () => backHome());
+  socket.on('roomClosed', d => backHome(d && d.msg));
 
   function renderClaim(e) {
     const box = $('claimBox');
@@ -147,6 +230,9 @@
       h('li', { class: p.online ? '' : 'offline' }, h('span', {}, p.name, i === me.seat ? ' (คุณ)' : ''),
         h('span', { class: 'tag' }, i === room.hostSeat ? 'หัวห้อง' : (p.online ? '' : 'หลุด')))));
     const isHost = me.seat === room.hostSeat;
+    $('lobbyTheme').textContent = `ธีม: ${T().name}`;
+    $('deleteBtn').hidden = !isHost;
+    $('leaveBtn').hidden = isHost;
     $('startBtn').hidden = !isHost;
     $('startBtn').disabled = room.players.length < 2;
     $('lobbyWait').textContent = isHost
@@ -158,6 +244,13 @@
     catch { $('linkBox').select(); }
   };
   $('startBtn').onclick = () => socket.emit('start');
+  $('leaveBtn').onclick = () => socket.emit('leaveRoom');
+  $('deleteBtn').onclick = () => openModal('confirm',
+    h('h3', {}, 'ลบห้องนี้?'),
+    h('p', {}, 'ทุกคนในห้องจะกลับไปหน้าแรก และรหัสห้องนี้จะใช้ไม่ได้อีก'),
+    h('div', { class: 'btns' },
+      h('button', { class: 'btn primary', onclick: () => { closeModal(); socket.emit('deleteRoom'); } }, 'ลบห้อง'),
+      h('button', { class: 'btn ghost', onclick: closeModal }, 'ยกเลิก')));
   const muteLabel = () => {
     $('muteBtn').textContent = SFX.muted ? 'เสียง: ปิด' : 'เสียง: เปิด';
     $('muteBtn').setAttribute('aria-pressed', String(SFX.muted));
@@ -189,8 +282,8 @@
   function cardEl(card, opts = {}) {
     if (!card) return h('div', { class: 'card empty' });
     if (card.hidden) return h('div', { class: 'card hidden-card', title: `การ์ดระดับ ${card.tier} (คว่ำ)` },
-      h('img', { src: `assets/back-${card.tier}.png`, alt: `หลังการ์ดระดับ ${card.tier}` }));
-    const name = CARD_NAMES[card.tier][card.color];
+      h('img', { src: `${A()}/back-${card.tier}.png`, alt: `หลังการ์ดระดับ ${card.tier}` }));
+    const name = T().cards[card.tier][card.color];
     const costs = COLORS.filter(c => card.cost[c] > 0).map(c => h('span', { class: `pip ${c}`, title: GEM[c] }, card.cost[c]));
     const el = h(opts.onclick ? 'button' : 'div', {
       class: 'card' + (opts.affordable ? ' affordable' : ''),
@@ -198,17 +291,17 @@
       'aria-label': `${name} ${card.points} แต้ม โบนัส${GEM[card.color]} ราคา ${COLORS.filter(c => card.cost[c]).map(c => GEM[c] + ' ' + card.cost[c]).join(' ')}`,
       onclick: opts.onclick,
     },
-    h('img', { class: 'art', src: `assets/card-${card.tier}-${card.color}.png`, alt: '' }),
+    h('img', { class: 'art', src: `${A()}/card-${card.tier}-${card.color}.png`, alt: '' }),
     h('div', { class: 'cost' }, costs),
     card.points ? h('span', { class: 'pts' }, card.points) : null,
-    h('img', { class: 'bonus', src: `assets/gem-${card.color}.png`, alt: '' }));
+    h('img', { class: 'bonus', src: `${A()}/gem-${card.color}.png`, alt: '' }));
     return el;
   }
 
   function nobleEl(n, onclick) {
-    return h(onclick ? 'button' : 'div', { class: 'noble', title: NOBLE_NAMES[n.id], onclick },
+    return h(onclick ? 'button' : 'div', { class: 'noble', title: T().nobles[n.id], onclick },
       h('span', { class: 'pts' }, n.points),
-      h('img', { src: `assets/noble-${n.id}.png`, alt: NOBLE_NAMES[n.id] }),
+      h('img', { src: `${A()}/noble-${n.id}.png`, alt: T().nobles[n.id] }),
       h('div', { class: 'req' }, COLORS.filter(c => n.req[c]).map(c => h('span', { class: `pip ${c}`, title: `การ์ด${GEM[c]}` }, n.req[c]))));
   }
 
@@ -229,7 +322,9 @@
       if (i === v.you) return null;
       const { gems, bon } = chips(p);
       return h('div', { class: 'opp' + (v.turn === i && v.phase !== 'over' ? ' turn' : '') + (online(i) ? '' : ' offline') },
-        h('div', { class: 'opp-head' }, h('span', {}, p.name, online(i) ? '' : ' (หลุด)'), h('span', { class: 'score' }, p.points)),
+        h('div', { class: 'opp-head' }, h('span', {}, p.name, online(i) ? '' : ' (หลุด)'),
+          v.turn === i && v.phase !== 'over' ? h('span', { class: 'clock', 'aria-label': 'เวลาที่เหลือ' }) : null,
+          h('span', { class: 'score' }, p.points)),
         h('div', { class: 'chips' }, bon.length ? bon : h('span', { class: 'minor', text: 'ยังไม่มีการ์ด' })),
         h('div', { class: 'chips' }, gems),
         h('div', { class: 'minor' }, `จอง ${p.reserved.length}/3 · ขุนนาง ${p.nobles.length}`),
@@ -247,7 +342,7 @@
         class: 'deck', disabled: !myTurn() || !v.deckCounts[t - 1] || meP.reserved.length >= 3,
         title: `จองจากกองระดับ ${t}`, 'aria-label': `กองระดับ ${t} เหลือ ${v.deckCounts[t - 1]} ใบ`,
         onclick: () => confirmBlindReserve(t),
-      }, h('img', { src: `assets/back-${t}.png`, alt: '' }), h('span', { class: 'count' }, v.deckCounts[t - 1])),
+      }, h('img', { src: `${A()}/back-${t}.png`, alt: '' }), h('span', { class: 'count' }, v.deckCounts[t - 1])),
       v.board[t - 1].map((c, slot) => cardEl(c, {
         affordable: c && myTurn() && payment(meP, c),
         onclick: c ? () => openCard(c, { source: 'board', tier: t, slot }) : null,
@@ -344,6 +439,7 @@
           p.reserved.map((c, i) => cardEl(c, { affordable: myTurn() && payment(p, c), onclick: () => openCard(c, { source: 'reserved', index: i }) }))) : null),
       h('div', { class: 'actions' },
         h('strong', {}, status),
+        v.phase !== 'over' ? h('span', { class: 'clock big', 'aria-label': 'เวลาที่เหลือในตานี้' }) : null,
         isHost && turnOffline && v.phase !== 'over' && v.turn !== v.you
           ? h('button', { class: 'btn', onclick: () => socket.emit('skipTurn') }, `ข้ามตา ${turnP.name}`) : null));
   }
@@ -358,10 +454,10 @@
   }
   function closeModal() { $('modal').hidden = true; delete $('modal').dataset.kind; }
   $('modal').addEventListener('click', e => {
-    if (e.target === $('modal') && ['card', 'blind'].includes($('modal').dataset.kind)) closeModal();
+    if (e.target === $('modal') && ['card', 'blind', 'confirm'].includes($('modal').dataset.kind)) closeModal();
   });
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && ['card', 'blind'].includes($('modal').dataset.kind)) closeModal();
+    if (e.key === 'Escape' && ['card', 'blind', 'confirm'].includes($('modal').dataset.kind)) closeModal();
   });
 
   function openCard(card, where) {
@@ -370,7 +466,7 @@
     const canAct = myTurn() && where !== null;
     const payText = pay ? [...COLORS, 'gold'].filter(c => pay[c]).map(c => `${GEM[c]} ${pay[c]}`).join(', ') || 'ฟรี (โบนัสครอบคลุมทั้งหมด)' : 'อัญมณียังไม่พอ';
     openModal('card',
-      h('h3', {}, `${CARD_NAMES[card.tier][card.color]} · ระดับ ${card.tier}`),
+      h('h3', {}, `${T().cards[card.tier][card.color]} · ระดับ ${card.tier}`),
       h('div', { class: 'bigcard' }, cardEl(card),
         h('div', {},
           h('p', {}, `ให้โบนัส${GEM[card.color]} 1 ถาวร${card.points ? ` และ ${card.points} แต้ม` : ''}`),

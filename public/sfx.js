@@ -62,6 +62,7 @@ window.SFX = (() => {
     },
     error() { note(140, 0, 0.18, 'square', 0.15); },
     click() { note(P[5], 0, 0.06, 'triangle', 0.2); },
+    tick() { note(1046.5, 0, 0.05, 'square', 0.08); },
   };
 
   return {
