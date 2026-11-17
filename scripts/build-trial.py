@@ -30,6 +30,12 @@ setup = '''<section id="home" class="screen">
       </select>
     </label>
     <div id="trialNames" class="trial-names"></div>
+    <fieldset class="theme-pick">
+      <legend>ธีม</legend>
+      <label class="theme-opt"><input type="radio" name="theme" value="siam" checked><img src="assets/siam/card-1-red.png" alt=""><span>สยามโบราณ</span></label>
+      <label class="theme-opt"><input type="radio" name="theme" value="fantasy"><img src="assets/fantasy/card-1-red.png" alt=""><span>แฟนตาซี</span></label>
+      <label class="theme-opt"><input type="radio" name="theme" value="scifi"><img src="assets/scifi/card-1-red.png" alt=""><span>ไซไฟอวกาศ</span></label>
+    </fieldset>
     <button id="trialStart" class="btn primary">เริ่มเล่น</button>
     <div hidden><input id="nameInput"><input id="codeInput"><button id="createBtn"></button><button id="joinBtn"></button><div id="claimBox"></div></div>
     <p id="homeErr" class="err" role="alert"></p>
@@ -56,7 +62,8 @@ html = html.replace('</body>', '''<script>
   count.addEventListener('change', draw); draw();
   document.getElementById('trialStart').addEventListener('click', function () {
     var names = Array.from(box.querySelectorAll('input')).map(function (i, k) { return i.value.trim() || defaults[k]; });
-    window.Trial.start(names);
+    var t = document.querySelector('input[name="theme"]:checked');
+    window.Trial.start(names, t ? t.value : 'siam');
   });
 })();
 </script>

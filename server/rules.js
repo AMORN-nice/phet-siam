@@ -77,7 +77,7 @@ function applyAction(state, playerIdx, action) {
   s.seq = (s.seq || 0) + 1;
   s.events = [];
 
-  if (action.type === 'skip') return { state: skip(s, p) };
+  if (action.type === 'skip') return { state: skip(s, p, action.reason) };
 
   if (s.phase === 'discard') {
     if (action.type !== 'discard') return { error: 'ต้องคืนอัญมณีให้เหลือ 10 เม็ดก่อน' };
@@ -212,7 +212,7 @@ function giveNoble(s, p, n) {
   log(s, `ขุนนางมาเยือน ${p.name} (+3 แต้ม)`);
 }
 
-function skip(s, p) {
+function skip(s, p, reason) {
   // Auto-resolve whatever the player was in the middle of, then pass.
   if (s.phase === 'discard') {
     let n = s.discardCount;
@@ -225,7 +225,7 @@ function skip(s, p) {
   if (s.phase === 'noble') giveNoble(s, p, s.nobleChoices[0]);
   s.phase = 'play';
   ev(s, 'skip');
-  log(s, `ข้ามตา ${p.name}`);
+  log(s, reason === 'timeout' ? `หมดเวลา: ข้ามตา ${p.name}` : `ข้ามตา ${p.name}`);
   return endTurn(s);
 }
 

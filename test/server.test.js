@@ -185,3 +185,74 @@ test('cannot start when fewer than 2 players are online', async () => {
   host.emit('start');
   assert.ok((await e).msg);
 });
+
+test('a guest can leave the lobby and their seat is removed', async () => {
+  const { host, others } = await makeRoom(3);
+  const left = next(others[0].c, 'left');
+  const r = next(host, 'room', r => r.players.length === 2);
+  others[0].c.emit('leaveRoom');
+  await left;
+  assert.deepStrictEqual((await r).players.map(p => p.name), ['หัวห้อง', 'เพื่อน2']);
+});
+
+test('the host can delete the lobby; everyone is sent back and the code stops working', async () => {
+  const { host, hj, others } = await makeRoom(2);
+  const closed = next(others[0].c, 'roomClosed');
+  const left = next(host, 'left');
+  host.emit('deleteRoom');
+  assert.ok((await closed).msg);
+  await left;
+  const c = client();
+  const e = next(c, 'err');
+  c.emit('join', { code: hj.code, name: 'ใหม่' });
+  assert.match((await e).msg, /ไม่พบห้อง/);
+});
+
+test('only the host can delete, and not after the game started', async () => {
+  const { host, others } = await makeRoom(2);
+  const e = next(others[0].c, 'err');
+  others[0].c.emit('deleteRoom');
+  assert.ok((await e).msg);
+  const st = next(host, 'state');
+  host.emit('start');
+  await st;
+  const e2 = next(host, 'err');
+  host.emit('deleteRoom');
+  assert.ok((await e2).msg);
+});
+
+test('when the host leaves the lobby, host passes on', async () => {
+  const { host, others } = await makeRoom(2);
+  const r = next(others[0].c, 'room', r => r.players.length === 1);
+  host.emit('leaveRoom');
+  assert.strictEqual((await r).hostSeat, 0);
+});
+
+test('room theme is chosen at create and shared with everyone', async () => {
+  const host = client();
+  const r = next(host, 'room');
+  host.emit('create', { name: 'เอ', theme: 'scifi' });
+  const room = await r;
+  assert.strictEqual(room.theme, 'scifi');
+  const c = client();
+  const r2 = next(c, 'room');
+  c.emit('join', { code: room.code, name: 'บี' });
+  assert.strictEqual((await r2).theme, 'scifi');
+});
+
+test('unknown theme falls back to siam', async () => {
+  const host = client();
+  const r = next(host, 'room');
+  host.emit('create', { name: 'เอ', theme: '<script>' });
+  assert.strictEqual((await r).theme, 'siam');
+});
+
+test('after the host deletes the room, guests cannot act in it', async () => {
+  const { host, others } = await makeRoom(2);
+  const closed = next(others[0].c, 'roomClosed');
+  host.emit('deleteRoom');
+  await closed;
+  const e = next(others[0].c, 'err');
+  others[0].c.emit('start');
+  assert.ok((await e).msg);
+});

@@ -3,6 +3,8 @@ const crypto = require('crypto');
 const R = require('./rules');
 
 const MAX_SEATS = 5;
+const THEMES = ['siam', 'fantasy', 'scifi'];
+const cleanTheme = t => (THEMES.includes(t) ? t : 'siam');
 const IDLE_MS = 30 * 60 * 1000;
 const rooms = new Map();
 
@@ -22,8 +24,8 @@ function cleanName(n) {
   return s || null;
 }
 
-function createRoom() {
-  const room = { code: newCode(), seats: [], hostSeat: 0, game: null, lastActive: Date.now() };
+function createRoom(theme) {
+  const room = { code: newCode(), theme: cleanTheme(theme), seats: [], hostSeat: 0, game: null, lastActive: Date.now() };
   rooms.set(room.code, room);
   return room;
 }
@@ -50,6 +52,7 @@ function fixHost(room) {
 function publicRoom(room) {
   return {
     code: room.code,
+    theme: room.theme,
     hostSeat: room.hostSeat,
     started: !!room.game,
     players: room.seats.map(s => ({ name: s.name, online: !!s.socketId })),
@@ -67,10 +70,35 @@ function startGame(room, rng = Math.random) {
   room.game = R.createGame(room.seats.map((s, i) => ({ id: String(i), name: s.name })), rng);
 }
 
+// Removes a seat (lobby only). Returns false if the room is now empty and was deleted.
+function removeSeat(room, i) {
+  room.seats.splice(i, 1);
+  if (!room.seats.length) { rooms.delete(room.code); return false; }
+  if (i < room.hostSeat) room.hostSeat--;
+  else if (i === room.hostSeat) room.hostSeat = Math.min(i, room.seats.length - 1);
+  fixHost(room);
+  return true;
+}
+
+// Rebuild a room from an opened snapshot (after a server restart). Nobody is online yet.
+function restoreRoom(p) {
+  const room = {
+    code: p.code,
+    theme: cleanTheme(p.theme),
+    seats: p.seats.map(s => ({ name: s.name, token: s.token, socketId: null })),
+    hostSeat: Math.max(0, p.seats.findIndex(s => s.token === p.hostToken)),
+    game: p.game,
+    restored: true,
+    lastActive: Date.now(),
+  };
+  rooms.set(room.code, room);
+  return room;
+}
+
 function sweep(now = Date.now()) {
   for (const [code, room] of rooms) {
     if (!room.seats.some(s => s.socketId) && now - room.lastActive > IDLE_MS) rooms.delete(code);
   }
 }
 
-module.exports = { rooms, MAX_SEATS, createRoom, getRoom, addSeat, cleanName, offlineSeats, fixHost, publicRoom, startGame, sweep, token };
+module.exports = { rooms, MAX_SEATS, THEMES, createRoom, getRoom, restoreRoom, removeSeat, addSeat, cleanName, offlineSeats, fixHost, publicRoom, startGame, sweep, token };

@@ -292,3 +292,9 @@ test('rejected actions do not bump seq', () => {
   R.applyAction(s, 1, { type: 'take3', colors: ['white', 'blue', 'green'] });
   assert.strictEqual(s.seq, 0);
 });
+
+test('timeout skip logs that time ran out', () => {
+  const s = ok(R.applyAction(newGame(2), 0, { type: 'skip', reason: 'timeout' }));
+  assert.match(s.log[s.log.length - 1], /หมดเวลา/);
+  assert.strictEqual(s.turn, 1);
+});
