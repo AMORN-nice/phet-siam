@@ -1,0 +1,251 @@
+/* เพชรสยาม — black lacquer and gold leaf (ลายรดน้ำ) */
+:root {
+  --lacquer: #1d0f0c;
+  --lacquer-2: #2b1712;
+  --cinnabar: #8e2418;
+  --gold: #d8a848;
+  --gold-dim: #8a6a2c;
+  --cream: #f2e2bd;
+  --jade: #3f9a7c;
+  --muted: #b89f78;
+  --g-white: #e9e6dd; --g-blue: #2f5fb3; --g-green: #2f8a4c; --g-red: #b3262a; --g-black: #3a3236; --g-gold: #e0b03c;
+  --card-w: 112px;
+  --font-ui: 'Chakra Petch', 'Tahoma', sans-serif;
+  --font-title: 'Charmonman', 'Chakra Petch', serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  font-family: var(--font-ui);
+  color: var(--cream);
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(29, 15, 12, .72), rgba(12, 6, 5, .93) 75%),
+    #2a1410 url(assets/table.png) repeat;
+  background-size: auto, 192px;
+  background-attachment: fixed;
+  image-rendering: pixelated;
+  font-size: 15px;
+  line-height: 1.5;
+}
+img { image-rendering: pixelated; display: block; }
+[hidden] { display: none !important; }
+button, input { font: inherit; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+.lacquer {
+  background: var(--lacquer);
+  border: 2px solid var(--gold-dim);
+  box-shadow: inset 0 0 0 2px var(--lacquer), inset 0 0 0 3px var(--gold);
+}
+
+/* ---------- Home / lobby ---------- */
+.screen { min-height: 100vh; }
+#home, #lobby { display: grid; place-items: center; padding: 24px; }
+.home-card { width: min(420px, 100%); padding: 32px 28px; text-align: center; }
+.title {
+  font-family: var(--font-title);
+  font-size: 64px; line-height: 1.1; margin: 0 0 4px;
+  color: var(--gold);
+  text-shadow: 0 3px 0 var(--cinnabar);
+}
+.title.small { font-size: 40px; }
+.sub { color: var(--muted); margin: 0 0 20px; }
+.field { display: grid; gap: 6px; text-align: left; margin-bottom: 14px; color: var(--muted); }
+input {
+  width: 100%; padding: 10px 12px; color: var(--cream);
+  background: var(--lacquer-2); border: 2px solid var(--gold-dim); border-radius: 0;
+}
+input:focus { border-color: var(--gold); outline: none; }
+#codeInput { text-transform: uppercase; letter-spacing: .2em; text-align: center; }
+.join-row { display: flex; gap: 8px; }
+.or { margin: 18px 0 10px; color: var(--muted); }
+.err { color: #ff8a7a; min-height: 1.5em; margin: 12px 0 0; }
+.btn {
+  padding: 10px 16px; cursor: pointer; white-space: nowrap;
+  color: var(--cream); background: var(--lacquer-2);
+  border: 2px solid var(--gold-dim);
+}
+.btn:hover { border-color: var(--gold); }
+.btn.primary { width: 100%; background: var(--cinnabar); border-color: var(--gold); color: #fff3d6; font-weight: 700; }
+.btn.primary:hover { background: #a82c1e; }
+.btn.ghost { background: transparent; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.lobby-players { list-style: none; padding: 0; margin: 20px 0; text-align: left; }
+.lobby-players li { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid var(--lacquer-2); }
+.lobby-players .tag { color: var(--gold); font-size: 13px; }
+.offline { opacity: .45; }
+.claim { margin-top: 14px; display: grid; gap: 8px; }
+
+/* ---------- Game layout ---------- */
+#game { display: grid; grid-template-rows: auto 1fr auto; gap: 10px; padding: 10px; padding-bottom: 0; }
+.opponents { display: flex; gap: 8px; overflow-x: auto; }
+.table { display: grid; grid-template-columns: auto 210px; gap: 18px; align-items: start; justify-content: center; }
+.board { display: grid; gap: 10px; justify-items: center; }
+.nobles { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.rows { display: grid; gap: 8px; }
+.row { display: flex; gap: 8px; }
+
+/* ---------- Cards ---------- */
+.card {
+  position: relative; width: var(--card-w); height: calc(var(--card-w) * 1.4);
+  background: var(--lacquer); border: 2px solid var(--gold-dim);
+  padding: 0; cursor: pointer; color: var(--cream); text-align: left;
+  display: grid; grid-template-rows: auto 1fr;
+}
+.card:hover:not(:disabled) { border-color: var(--gold); transform: translateY(-2px); }
+.card .art { width: 100%; height: calc(var(--card-w) * .75); object-fit: cover; border-bottom: 2px solid var(--gold-dim); }
+.card .pts {
+  position: absolute; top: 2px; left: 4px; font-size: 26px; font-weight: 700; line-height: 1;
+  color: #fff; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000;
+}
+.card .bonus { position: absolute; top: 3px; right: 3px; width: 26px; height: 26px; filter: drop-shadow(1px 1px 0 #000); }
+.card .cost { display: flex; flex-wrap: wrap; align-content: flex-end; gap: 3px; padding: 4px; }
+.card.empty { visibility: hidden; }
+.card.affordable { box-shadow: 0 0 0 2px var(--jade); }
+.card .band { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; }
+.pip {
+  display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 4px;
+  font-weight: 700; font-size: 14px; border-radius: 11px; border: 2px solid #000;
+}
+.pip.white { background: var(--g-white); color: #222; }
+.pip.blue { background: var(--g-blue); color: #fff; }
+.pip.green { background: var(--g-green); color: #fff; }
+.pip.red { background: var(--g-red); color: #fff; }
+.pip.black { background: var(--g-black); color: #fff; }
+.pip.gold { background: var(--g-gold); color: #222; }
+.deck {
+  position: relative; width: var(--card-w); height: calc(var(--card-w) * 1.4);
+  padding: 0; border: 2px solid var(--gold-dim); cursor: pointer; background: #000;
+}
+.deck img { width: 100%; height: 100%; }
+.deck .count {
+  position: absolute; bottom: 4px; right: 6px; font-weight: 700; color: #fff;
+  text-shadow: 1px 1px 0 #000;
+}
+.deck:disabled { opacity: .8; cursor: default; }
+.card.hidden-card { cursor: default; }
+.card.hidden-card img { width: 100%; height: 100%; }
+
+.noble {
+  position: relative; width: 92px; height: 112px; padding: 4px;
+  background: var(--lacquer); border: 2px solid var(--gold-dim);
+  display: grid; grid-template-rows: auto 1fr; justify-items: center;
+}
+.noble img { width: 64px; height: 64px; }
+.noble .pts { position: absolute; top: 2px; left: 5px; font-weight: 700; font-size: 20px; text-shadow: 2px 2px 0 #000; }
+.noble .req { display: flex; gap: 2px; align-items: end; }
+.req .pip { border-radius: 2px; min-width: 18px; height: 20px; font-size: 13px; }
+
+/* ---------- Bank ---------- */
+.bank-col { display: grid; gap: 10px; width: 210px; min-width: 0; }
+.bank { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 10px; background: rgba(15, 7, 5, .7); border: 2px solid var(--gold-dim); }
+.gem-btn {
+  position: relative; padding: 4px; background: transparent; border: 2px solid transparent; cursor: pointer;
+  display: grid; justify-items: center; color: var(--cream);
+}
+.gem-btn img { width: 48px; height: 48px; }
+.gem-btn .n { font-weight: 700; font-size: 16px; }
+.gem-btn:hover:not(:disabled) { border-color: var(--gold-dim); }
+.gem-btn.sel { border-color: var(--jade); background: rgba(63, 154, 124, .2); }
+.gem-btn .picked {
+  position: absolute; top: 0; right: 0; background: var(--jade); color: #fff;
+  font-weight: 700; padding: 0 6px; font-size: 13px;
+}
+.gem-btn:disabled { opacity: .7; cursor: default; }
+.take-area { display: grid; gap: 4px; }
+.take-bar { display: flex; gap: 8px; }
+.take-bar .btn { min-width: 0; }
+.take-bar .btn.primary { width: auto; flex: 1; }
+.take-bar.idle { visibility: hidden; }
+.take-hint { margin: 0; min-height: 3em; font-size: 13px; line-height: 1.5; color: var(--muted); }
+.take-hint.warn { color: #ff9a8a; }
+.log:empty { display: none; }
+.log { list-style: none; margin: 0; padding: 8px 10px; max-height: 240px; overflow-y: auto; font-size: 13px; color: var(--muted); background: rgba(15, 7, 5, .7); border: 1px solid var(--lacquer-2); }
+.log li + li { margin-top: 2px; }
+.log li:last-child { color: var(--cream); }
+
+/* ---------- Players ---------- */
+.opp {
+  min-width: 190px; padding: 8px 10px; background: rgba(15, 7, 5, .85); border: 2px solid var(--lacquer-2);
+}
+.opp.turn, .me.turn { border-color: var(--jade); box-shadow: 0 0 0 2px var(--jade); }
+.opp-head { display: flex; justify-content: space-between; gap: 8px; font-weight: 700; }
+.opp-head .score { color: var(--gold); font-size: 18px; }
+.chips { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+.chip { display: inline-flex; align-items: center; gap: 1px; font-size: 13px; }
+.chip img { width: 18px; height: 18px; }
+.chip.bonus { padding: 0 4px; border: 1px solid var(--gold-dim); }
+.minor { color: var(--muted); font-size: 13px; }
+.opp-res { display: flex; gap: 4px; margin-top: 6px; --card-w: 48px; }
+.opp-res .card .pts { font-size: 14px; top: 1px; left: 2px; }
+.opp-res .card .bonus { width: 14px; height: 14px; top: 2px; right: 2px; }
+.opp-res .card .cost { padding: 2px; gap: 1px; }
+.opp-res .pip { min-width: 12px; height: 12px; font-size: 9px; padding: 0 1px; border-width: 1px; }
+.mute { position: fixed; top: 8px; right: 8px; z-index: 5; padding: 4px 10px; font-size: 13px; }
+.me { position: sticky; bottom: 0; padding: 10px 14px; display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; }
+.me .who { font-weight: 700; }
+.me .who .score { font-size: 28px; color: var(--gold); display: block; line-height: 1; }
+.me .holdings { display: grid; gap: 4px; }
+.me .row-label { color: var(--muted); font-size: 13px; margin-right: 6px; }
+.me .reserved { display: flex; gap: 6px; --card-w: 76px; }
+.me .reserved .card .pts { font-size: 18px; }
+.me .reserved .card .bonus { width: 18px; height: 18px; }
+.me .reserved .card .pip { min-width: 16px; height: 16px; font-size: 11px; padding: 0 2px; }
+.me .actions { display: grid; gap: 6px; }
+
+.banner {
+  position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+  padding: 6px 16px; background: var(--jade); color: #fff; font-weight: 700;
+  border: 2px solid #fff3d6; pointer-events: none; opacity: 0; transition: opacity .3s;
+}
+.banner.show { opacity: 1; }
+
+/* ---------- Modal / toast ---------- */
+.modal { position: fixed; inset: 0; background: rgba(0, 0, 0, .65); display: grid; place-items: center; padding: 16px; z-index: 10; }
+.modal-box { padding: 20px; max-width: 520px; width: 100%; }
+.modal h3 { margin: 0 0 12px; color: var(--gold); font-size: 22px; }
+.modal .btns { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.modal .btns .btn { flex: 1; width: auto; }
+.modal .bigcard { display: flex; gap: 14px; align-items: start; --card-w: 150px; }
+.modal .bigcard .card { cursor: default; }
+.pay-line { color: var(--muted); }
+.discard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.discard-cell { display: grid; justify-items: center; gap: 4px; }
+.discard-cell img { width: 36px; height: 36px; }
+.stepper { display: flex; align-items: center; gap: 6px; }
+.stepper button { width: 30px; height: 30px; padding: 0; }
+.noble-pick { display: flex; gap: 10px; flex-wrap: wrap; }
+.noble-pick .noble { cursor: pointer; }
+.noble-pick .noble:hover { border-color: var(--gold); }
+.results { list-style: none; padding: 0; margin: 0; }
+.results li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--lacquer-2); }
+.results li.win { color: var(--gold); font-weight: 700; }
+.toast {
+  position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%);
+  background: var(--cinnabar); color: #fff; padding: 8px 16px; border: 2px solid var(--gold);
+  opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; max-width: 90vw;
+}
+.toast.show { opacity: 1; }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 900px) {
+  :root { --card-w: 64px; }
+  .row, .rows, .nobles { gap: 5px; }
+  #game { padding: 6px; }
+  .card .pts { font-size: 18px; }
+  .card .bonus { width: 18px; height: 18px; }
+  .pip { min-width: 16px; height: 16px; font-size: 11px; padding: 0 2px; border-width: 1px; }
+  .table { grid-template-columns: 1fr; }
+  .bank-col { width: 100%; }
+  .bank { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .gem-btn img { width: 36px; height: 36px; }
+  .log { max-height: 90px; }
+  .noble { width: 64px; height: 84px; }
+  .noble img { width: 44px; height: 44px; }
+  .me { grid-template-columns: 1fr; gap: 8px; }
+  .title { font-size: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+  .card:hover:not(:disabled) { transform: none; }
+}

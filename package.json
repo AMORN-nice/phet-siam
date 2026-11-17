@@ -1,0 +1,20 @@
+{
+  "name": "phet-siam",
+  "version": "1.0.0",
+  "description": "เพชรสยาม - เกมสะสมอัญมณีออนไลน์ เล่นกับเพื่อน 2-5 คน",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.22.3",
+    "socket.io": "^4.8.4"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.4"
+  }
+}
