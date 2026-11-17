@@ -1,4 +1,4 @@
-/* เพชรสยาม — sound effects synthesized with Web Audio (no audio files).
+/* เพชรย้อม — sound effects synthesized with Web Audio (no audio files).
    Timbre: short xylophone-like plucks on a Thai pentatonic scale, like a ranat. */
 window.SFX = (() => {
   let ctx = null, master = null;

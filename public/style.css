@@ -1,4 +1,4 @@
-/* เพชรสยาม — black lacquer and gold leaf (ลายรดน้ำ) */
+/* เพชรย้อม — black lacquer and gold leaf (ลายรดน้ำ) */
 /* Theme palettes: body[data-theme] picks one. Siam is the default. */
 :root, body[data-theme="siam"] {
   --table: url(assets/siam/table.png);

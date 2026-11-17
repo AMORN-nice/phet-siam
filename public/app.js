@@ -1,4 +1,4 @@
-/* เพชรสยาม — browser client. Renders the view the server sends; sends intents. */
+/* เพชรย้อม — browser client. Renders the view the server sends; sends intents. */
 (() => {
   const COLORS = ['white', 'blue', 'green', 'red', 'black'];
   const GEM = { white: 'เพชร', blue: 'ไพลิน', green: 'มรกต', red: 'ทับทิม', black: 'นิล', gold: 'ทอง' };
