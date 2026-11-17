@@ -240,7 +240,7 @@ function start(port = process.env.PORT || 3000, opts = {}) {
 }
 
 if (require.main === module) {
-  start().then(s => console.log(`เพชรสยาม พร้อมแล้วที่ http://localhost:${s.port}`));
+  start().then(s => console.log(`เพชรย้อม พร้อมแล้วที่ http://localhost:${s.port}`));
 }
 
 module.exports = { start };

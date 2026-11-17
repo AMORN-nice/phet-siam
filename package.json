@@ -1,7 +1,7 @@
 {
   "name": "phet-siam",
   "version": "1.0.0",
-  "description": "เพชรสยาม - เกมสะสมอัญมณีออนไลน์ เล่นกับเพื่อน 2-5 คน",
+  "description": "เพชรย้อม - เกมสะสมอัญมณีออนไลน์ เล่นกับเพื่อน 2-5 คน",
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
