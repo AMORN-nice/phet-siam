@@ -1,5 +1,7 @@
 /* เพชรย้อม — black lacquer and gold leaf (ลายรดน้ำ) */
 /* Theme palettes: body[data-theme] picks one. Siam is the default. */
+/* Card size follows the screen height so the whole table fits without scrolling. */
+:root { --card-w: max(64px, min(112px, calc((100dvh - 370px) / 4.3))); }
 :root, body[data-theme="siam"] {
   --table: url(assets/siam/table.png);
   --table-base: #2a1410;
@@ -12,7 +14,6 @@
   --jade: #3f9a7c;
   --muted: #b89f78;
   --g-white: #e9e6dd; --g-blue: #2f5fb3; --g-green: #2f8a4c; --g-red: #b3262a; --g-black: #3a3236; --g-gold: #e0b03c;
-  --card-w: 112px;
   --font-ui: 'Chakra Petch', 'Tahoma', sans-serif;
   --font-title: 'Charmonman', 'Chakra Petch', serif;
 }
@@ -122,7 +123,7 @@ select:focus { border-color: var(--gold); outline: none; }
 .theme-tag { color: var(--gold); margin-bottom: 6px; }
 
 /* ---------- Game layout ---------- */
-#game { display: grid; grid-template-rows: auto 1fr auto; gap: 10px; padding: 10px; padding-bottom: 0; }
+#game { display: grid; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 10px; padding-bottom: 0; }
 .opponents { display: flex; gap: 8px; overflow-x: auto; }
 .table { display: grid; grid-template-columns: auto 210px; gap: 18px; align-items: start; justify-content: center; }
 .board { display: grid; gap: 10px; justify-items: center; }
@@ -280,21 +281,48 @@ select:focus { border-color: var(--gold); outline: none; }
 
 /* ---------- Small screens ---------- */
 @media (max-width: 900px) {
-  :root { --card-w: 64px; }
+  /* Cards shrink to fit both the width and the height of the screen. */
+  :root { --card-w: max(48px, min(112px, calc((100vw - 40px) / 5.5), calc((100dvh - 510px) / 5.5))); }
   .row, .rows, .nobles { gap: 5px; }
   #game { padding: 6px; }
   .card .pts { font-size: 18px; }
   .card .bonus { width: 18px; height: 18px; }
   .pip { min-width: 16px; height: 16px; font-size: 11px; padding: 0 2px; border-width: 1px; }
-  .table { grid-template-columns: 1fr; }
+  .table { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .opp { min-width: 150px; padding: 4px 8px; }
+  .opp .chips { margin-top: 2px; }
   .bank-col { width: 100%; }
   .bank { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .gem-btn img { width: 36px; height: 36px; }
   .log { max-height: 90px; }
   .noble { width: 64px; height: 84px; }
   .noble img { width: 44px; height: 44px; }
-  .me { grid-template-columns: 1fr; gap: 8px; }
+  .bank { padding: 4px; gap: 4px; }
+  .take-hint { min-height: 1.5em; font-size: 12px; }
+  .me { grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; padding: 6px 10px; }
+  .me .who .score { font-size: 22px; }
+  .me .reserved { --card-w: 56px; }
+  .clock.big { font-size: 18px; }
   .title { font-size: 48px; }
+}
+/* Short screens (phone held sideways): let the player panel scroll with the page instead of covering the board. */
+@media (max-height: 520px) {
+  .me { position: static; }
+  :root { --card-w: max(48px, min(90px, calc((100vw - 300px) / 5.5))); }
+}
+/* Everything printed on a card scales with the card, so small cards stay readable and nothing spills out. */
+.rows .card .pip, .modal .bigcard .card .pip {
+  min-width: max(13px, calc(var(--card-w) * .2)); height: max(13px, calc(var(--card-w) * .2));
+  font-size: max(9px, calc(var(--card-w) * .125)); padding: 0 2px; border-width: max(1px, calc(var(--card-w) * .018));
+}
+.rows .card .cost { gap: max(1px, calc(var(--card-w) * .025)); padding: max(2px, calc(var(--card-w) * .035)); }
+.rows .card .pts { font-size: max(14px, calc(var(--card-w) * .23)); }
+.rows .card .bonus { width: max(14px, calc(var(--card-w) * .23)); height: max(14px, calc(var(--card-w) * .23)); }
+@media (max-width: 900px) {
+  .noble { width: max(52px, calc(var(--card-w) * .92)); height: max(70px, calc(var(--card-w) * 1.22)); }
+  .noble img { width: max(34px, calc(var(--card-w) * .62)); height: max(34px, calc(var(--card-w) * .62)); }
+  .noble .pts { font-size: 16px; }
+  .req .pip { min-width: 14px; height: 16px; font-size: 11px; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
