@@ -104,6 +104,13 @@
   for (const r of document.querySelectorAll('input[name="theme"]')) r.addEventListener('change', () => setTheme(pickedTheme()));
   setTheme(pickedTheme());
   $('createBtn').onclick = () => { const name = myName(); if (name) socket.emit('create', { name, theme: pickedTheme() }); };
+  $('botCount').value = store.get('ps-bots') || '1';
+  $('soloBtn').onclick = () => {
+    const name = myName();
+    if (!name) return;
+    store.set('ps-bots', $('botCount').value);
+    socket.emit('solo', { name, theme: pickedTheme(), bots: Number($('botCount').value) });
+  };
   const doJoin = () => {
     const code = $('codeInput').value.trim().toUpperCase();
     if (code.length !== 4) { $('homeErr').textContent = 'รหัสห้องมี 4 ตัวอักษร'; return; }
@@ -519,11 +526,13 @@
     const order = v.players.map((p, i) => ({ p, i })).sort((a, b) => b.p.points - a.p.points || a.p.cards.length - b.p.cards.length);
     const names = v.winners.map(i => v.players[i].name).join(' และ ');
     const isHost = room && me.seat === room.hostSeat;
+    const solo = room && room.solo;
     openModal('over', h('h3', {}, v.winners.length > 1 ? `เสมอ! ${names} ชนะร่วมกัน` : `${names} ชนะ!`),
       h('ol', { class: 'results' }, order.map(({ p, i }) => h('li', { class: v.winners.includes(i) ? 'win' : '' },
         h('span', {}, p.name, i === v.you ? ' (คุณ)' : ''), h('span', {}, `${p.points} แต้ม · การ์ด ${p.cards.length} ใบ`)))),
       h('div', { class: 'btns' },
         isHost ? h('button', { class: 'btn primary', onclick: () => socket.emit('restart') }, 'เล่นอีกครั้ง')
-          : h('p', { class: 'minor', text: 'รอหัวห้องเริ่มเกมใหม่' })));
+          : h('p', { class: 'minor', text: 'รอหัวห้องเริ่มเกมใหม่' }),
+        solo ? h('button', { class: 'btn ghost', onclick: () => { closeModal(); socket.emit('leaveRoom'); } }, 'กลับหน้าแรก') : null));
   }
 })();

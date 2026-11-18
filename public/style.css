@@ -85,6 +85,11 @@ input {
   background: var(--lacquer-2); border: 2px solid var(--gold-dim); border-radius: 0;
 }
 input:focus { border-color: var(--gold); outline: none; }
+select {
+  flex: 1; min-width: 0; padding: 10px 12px; font: inherit; color: var(--cream);
+  background: var(--lacquer-2); border: 2px solid var(--gold-dim); border-radius: 0;
+}
+select:focus { border-color: var(--gold); outline: none; }
 #codeInput { text-transform: uppercase; letter-spacing: .2em; text-align: center; }
 .join-row { display: flex; gap: 8px; }
 .or { margin: 18px 0 10px; color: var(--muted); }
