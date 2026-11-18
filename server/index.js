@@ -6,9 +6,11 @@ const { Server } = require('socket.io');
 const R = require('./rules');
 const Rooms = require('./rooms');
 const Snap = require('./snapshot');
+const { botAction } = require('./bot');
 
 function start(port = process.env.PORT || 3000, opts = {}) {
   const TURN_MS = opts.turnMs || Number(process.env.TURN_MS) || 60 * 1000;
+  const BOT_MS = opts.botMs || Number(process.env.BOT_MS) || 1500; // pause before a bot moves
   // Must stay the same across restarts for snapshots to open (Render: SNAPSHOT_SECRET env var).
   const SECRET = opts.secret || process.env.SNAPSHOT_SECRET || require('crypto').randomBytes(32).toString('hex');
   const app = express();
@@ -30,10 +32,13 @@ function start(port = process.env.PORT || 3000, opts = {}) {
     if (!room.game) return;
     room.seats.forEach((s, i) => { if (s.socketId) io.to(s.socketId).emit('state', viewWithTimer(room, i)); });
   };
+  const humansHere = room => room.seats.some(s => s.socketId);
+  // A solo game pauses (no clock, no bot moves) while its player is away.
+  const paused = room => room.solo && !humansHere(room);
   // One clock per turn: restarts when the turn moves on, not on discard/noble steps within it.
   const armTimer = room => {
     const g = room.game;
-    const key = g && g.phase !== 'over' ? `${g.round}:${g.turn}` : null;
+    const key = g && g.phase !== 'over' && !paused(room) ? `${g.round}:${g.turn}` : null;
     if (key === room.timerKey) return;
     clearTimeout(room.timer);
     room.timerKey = key;
@@ -53,7 +58,8 @@ function start(port = process.env.PORT || 3000, opts = {}) {
     data: Snap.seal({
       v: 1, code: room.code, theme: room.theme,
       hostToken: room.seats[room.hostSeat] && room.seats[room.hostSeat].token,
-      seats: room.seats.map(s => ({ name: s.name, token: s.token })),
+      solo: !!room.solo,
+      seats: room.seats.map(s => ({ name: s.name, token: s.token, bot: !!s.bot })),
       game: room.game,
     }, SECRET),
   });
@@ -69,7 +75,27 @@ function start(port = process.env.PORT || 3000, opts = {}) {
     if (!p || p.v !== 1 || p.code !== code || !Array.isArray(p.seats) || !p.game) return null;
     return p;
   };
-  const commit = room => { armTimer(room); sendState(room); sendSnap(room); };
+  // If it's a bot's turn (including its discard/noble steps), it moves after a short pause.
+  const scheduleBot = room => {
+    clearTimeout(room.botTimer);
+    const g = room.game;
+    if (!g || g.phase === 'over' || paused(room) || room.closed) return;
+    const seat = room.seats[g.turn];
+    if (!seat || !seat.bot) return;
+    const seq = g.seq;
+    room.botTimer = setTimeout(() => {
+      if (!room.game || room.game.seq !== seq || room.closed || paused(room)) return;
+      const t = room.game.turn;
+      const res = R.applyAction(room.game, t, botAction(room.game, t));
+      if (res.error) return;
+      room.game = res.state;
+      room.restored = false;
+      room.lastActive = Date.now();
+      commit(room);
+    }, BOT_MS);
+    if (room.botTimer.unref) room.botTimer.unref();
+  };
+  const commit = room => { armTimer(room); sendState(room); sendSnap(room); scheduleBot(room); };
   const sendJoined = (room, i) => {
     const s = room.seats[i];
     if (s.socketId) io.to(s.socketId).emit('joined', { code: room.code, token: s.token, seat: i });
@@ -89,6 +115,7 @@ function start(port = process.env.PORT || 3000, opts = {}) {
         armTimer(r);
         socket.emit('state', viewWithTimer(r, i));
         socket.emit('snap', snapFor(r));
+        scheduleBot(r);
       }
     };
     const mySeat = () => (room && !room.closed ? room.seats.findIndex(s => s.socketId === socket.id) : -1);
@@ -99,6 +126,16 @@ function start(port = process.env.PORT || 3000, opts = {}) {
       if (mySeat() >= 0) return err('คุณอยู่ในห้องแล้ว');
       const r = Rooms.createRoom(d && d.theme);
       attach(r, Rooms.addSeat(r, name, null));
+    });
+
+    // Solo game against bots: the room starts immediately.
+    socket.on('solo', d => {
+      const name = Rooms.cleanName(d && d.name);
+      if (!name) return err('กรุณาใส่ชื่อ');
+      if (mySeat() >= 0) return err('คุณอยู่ในห้องแล้ว');
+      const r = Rooms.createSoloRoom(d && d.theme, name, null, d && d.bots);
+      Rooms.startGame(r);
+      attach(r, r.seats.findIndex(s => !s.bot));
     });
 
     socket.on('join', d => {
@@ -122,6 +159,7 @@ function start(port = process.env.PORT || 3000, opts = {}) {
         if (old && old !== socket.id) io.to(old).emit('err', { msg: 'คุณเปิดเกมจากที่อื่นแล้ว', kicked: true });
         return attach(r, byToken);
       }
+      if (r.solo) return err('ห้องนี้เป็นเกมเล่นคนเดียวกับบอท');
       const name = Rooms.cleanName(d.name);
       if (!name) return err('กรุณาใส่ชื่อ');
       if (r.game) return err('เกมเริ่มไปแล้ว เลือกเข้าแทนที่นั่งของคนที่หลุดได้', { offlineSeats: Rooms.offlineSeats(r), room: Rooms.publicRoom(r) });
@@ -133,6 +171,7 @@ function start(port = process.env.PORT || 3000, opts = {}) {
       d = d || {};
       const r = Rooms.getRoom(d.code);
       if (!r || !r.game) return err('ไม่พบห้องนี้');
+      if (r.solo) return err('ห้องนี้เป็นเกมเล่นคนเดียวกับบอท');
       if (mySeat() >= 0) return err('คุณอยู่ในห้องแล้ว');
       const i = d.seat;
       if (!Number.isInteger(i) || !r.seats[i] || r.seats[i].socketId) return err('ที่นั่งนี้ไม่ว่าง');
@@ -145,7 +184,7 @@ function start(port = process.env.PORT || 3000, opts = {}) {
       if (seat < 0) return err('ยังไม่ได้เข้าห้อง');
       if (seat !== room.hostSeat) return err('เฉพาะหัวห้องเท่านั้นที่เริ่มเกมได้');
       if (room.game && room.game.phase !== 'over') return err('เกมเริ่มไปแล้ว');
-      if (room.seats.filter(s => s.socketId).length < 2) return err('ต้องมีผู้เล่นออนไลน์อย่างน้อย 2 คน');
+      if (room.seats.filter(Rooms.present).length < 2) return err('ต้องมีผู้เล่นออนไลน์อย่างน้อย 2 คน');
       if (!room.game) room.seats = room.seats.filter(s => s.socketId); // drop people who left the lobby
       Rooms.startGame(room);
       room.seats.forEach((s, i) => sendJoined(room, i));
@@ -172,7 +211,7 @@ function start(port = process.env.PORT || 3000, opts = {}) {
       if (seat < 0 || !room.game) return err('ยังไม่ได้เริ่มเกม');
       if (seat !== room.hostSeat) return err('เฉพาะหัวห้องเท่านั้นที่ข้ามตาได้');
       const t = room.game.turn;
-      if (room.seats[t].socketId) return err('ผู้เล่นคนนี้ยังออนไลน์อยู่');
+      if (Rooms.present(room.seats[t])) return err('ผู้เล่นคนนี้ยังออนไลน์อยู่');
       const res = R.applyAction(room.game, t, { type: 'skip' });
       if (res.error) return err(res.error);
       room.game = res.state;
@@ -183,6 +222,14 @@ function start(port = process.env.PORT || 3000, opts = {}) {
     socket.on('leaveRoom', () => {
       const seat = mySeat();
       if (seat < 0) return err('ยังไม่ได้เข้าห้อง');
+      if (room.solo) { // leaving a solo game ends it
+        const r = room;
+        room = null;
+        r.closed = true;
+        clearTimeout(r.timer); clearTimeout(r.botTimer);
+        Rooms.rooms.delete(r.code);
+        return socket.emit('left');
+      }
       if (room.game) return err('ออกจากห้องได้เฉพาะตอนรอเริ่มเกม');
       const r = room;
       room = null;
@@ -218,6 +265,7 @@ function start(port = process.env.PORT || 3000, opts = {}) {
       room.lastActive = Date.now();
       Rooms.fixHost(room);
       sendRoom(room);
+      if (room.solo) { armTimer(room); scheduleBot(room); }
     });
   });
 
@@ -231,7 +279,7 @@ function start(port = process.env.PORT || 3000, opts = {}) {
         io,
         close: () => {
           clearInterval(sweeper);
-          for (const r of Rooms.rooms.values()) clearTimeout(r.timer);
+          for (const r of Rooms.rooms.values()) { clearTimeout(r.timer); clearTimeout(r.botTimer); }
           io.close(); server.close();
         },
       });

@@ -38,7 +38,20 @@ function addSeat(room, name, socketId) {
   return room.seats.length - 1;
 }
 
-const offlineSeats = room => room.seats.map((s, i) => (s.socketId ? -1 : i)).filter(i => i >= 0);
+// Bots count as always present; they never go offline and nobody can take their seat.
+const present = s => !!(s.bot || s.socketId);
+const offlineSeats = room => room.seats.map((s, i) => (present(s) ? -1 : i)).filter(i => i >= 0);
+
+const BOT_NAMES = ['บอทแก้ว', 'บอทเพชร', 'บอททับทิม', 'บอทมรกต'];
+// Solo room: one human plus 1-4 bots, started straight away.
+function createSoloRoom(theme, name, socketId, bots) {
+  const room = createRoom(theme);
+  room.solo = true;
+  addSeat(room, name, socketId);
+  const n = Math.min(4, Math.max(1, Number.isInteger(bots) ? bots : 1));
+  for (let i = 0; i < n; i++) room.seats.push({ name: BOT_NAMES[i], token: token(), socketId: null, bot: true });
+  return room;
+}
 
 function fixHost(room) {
   if (room.seats[room.hostSeat] && room.seats[room.hostSeat].socketId) return;
@@ -55,7 +68,8 @@ function publicRoom(room) {
     theme: room.theme,
     hostSeat: room.hostSeat,
     started: !!room.game,
-    players: room.seats.map(s => ({ name: s.name, online: !!s.socketId })),
+    solo: !!room.solo,
+    players: room.seats.map(s => ({ name: s.name, online: present(s), bot: !!s.bot })),
   };
 }
 
@@ -85,7 +99,8 @@ function restoreRoom(p) {
   const room = {
     code: p.code,
     theme: cleanTheme(p.theme),
-    seats: p.seats.map(s => ({ name: s.name, token: s.token, socketId: null })),
+    seats: p.seats.map(s => ({ name: s.name, token: s.token, socketId: null, bot: !!s.bot })),
+    solo: !!p.solo,
     hostSeat: Math.max(0, p.seats.findIndex(s => s.token === p.hostToken)),
     game: p.game,
     restored: true,
@@ -101,4 +116,4 @@ function sweep(now = Date.now()) {
   }
 }
 
-module.exports = { rooms, MAX_SEATS, THEMES, createRoom, getRoom, restoreRoom, removeSeat, addSeat, cleanName, offlineSeats, fixHost, publicRoom, startGame, sweep, token };
+module.exports = { rooms, MAX_SEATS, THEMES, present, createSoloRoom, createRoom, getRoom, restoreRoom, removeSeat, addSeat, cleanName, offlineSeats, fixHost, publicRoom, startGame, sweep, token };
